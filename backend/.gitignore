@@ -6,7 +6,7 @@ logs/
 
 *.md
 !README.md
-.env.example
+!.env.example
 
 *.codex
 .codex

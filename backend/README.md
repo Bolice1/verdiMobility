@@ -14,6 +14,7 @@ cd backend
 npm install
 cp .env.example .env
 # Edit .env: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET (each ≥32 chars)
+# Optional frontend URLs: FRONTEND_URL, EMAIL_VERIFICATION_URL, PASSWORD_RESET_URL
 ```
 
 Create database and apply schema (one-time on a fresh database):
@@ -40,9 +41,9 @@ npm run dev
 NODE_ENV=production npm start
 ```
 
-Health check: `GET http://localhost:4000/health`
+Health check: `GET http://localhost:5987/health`
 
-API base: `http://localhost:4000/api`
+API base: `http://localhost:5987/api`
 
 ## PostgreSQL connection
 
@@ -87,7 +88,20 @@ For managed cloud databases, append SSL params as required by the provider (ofte
 | POST | `/api/matching/run` | Admin or `company`; body optional `shipmentId`, `limit` |
 | POST | `/api/ratings` | Sender or admin; body `{ shipmentId, rating, review? }` |
 | GET | `/api/ratings/drivers/:driverId` | Authenticated; list ratings + average |
+| POST | `/api/payments` | Create or restart payment workflow for a shipment |
+| GET | `/api/payments` | Role-scoped payment list |
+| GET | `/api/payments/:id` | Role-scoped payment detail |
+| PATCH | `/api/payments/:id/status` | Admin; move payment through processing lifecycle |
+| POST | `/api/payments/:id/refund` | Admin; partial or full refund |
 | PATCH | `/api/shipments/:id/impact` | Admin; set `distanceKm`, `baselineDistanceKm`, `fuelSavedLiters`, `co2SavedKg` |
 | GET | `/api/analytics/impact` | Admin/company; aggregate CO₂/fuel/distance stats |
 
 Matching assigns `pending` shipments to `available` vehicles with sufficient capacity; if the vehicle has prior deliveries, destination similarity is required (historical `shipments.destination`). New vehicles with no history can still match (cold start).
+
+## Payment workflow
+
+- One payment workflow is tracked per shipment.
+- Sender or admin can initialize the workflow with `POST /api/payments`.
+- Admin can progress payment status through `pending -> authorized -> processing -> completed` or mark `failed/cancelled`.
+- Refunds support partial and full amounts via `POST /api/payments/:id/refund`.
+- Company analytics remain company-scoped; company users only see impact for shipments fulfilled by their own fleet.

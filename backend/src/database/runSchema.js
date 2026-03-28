@@ -14,6 +14,49 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ADMIN_EMAIL = 'admin@verdi.com';
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS ?? '12', 10);
 
+async function ensureMigrationsTable(client) {
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      name TEXT PRIMARY KEY,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
+async function applyTrackedMigrations(client) {
+  const migDir = join(__dirname, '../../sql/migrations');
+  const files = (await readdir(migDir))
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+
+  const appliedResult = await client.query(
+    `SELECT name FROM schema_migrations`,
+  );
+  const applied = new Set(appliedResult.rows.map((row) => row.name));
+
+  for (const f of files) {
+    if (applied.has(f)) {
+      logger.info(`Skipping already applied migration ${f}`);
+      continue;
+    }
+
+    const sql = await readFile(join(migDir, f), 'utf8');
+    await client.query('BEGIN');
+    try {
+      await client.query(sql);
+      await client.query(
+        `INSERT INTO schema_migrations (name) VALUES ($1)`,
+        [f],
+      );
+      await client.query('COMMIT');
+      logger.info(`Applied migration ${f}`);
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    }
+  }
+}
+
 function publicMessageForPgError(err) {
   if (!err || typeof err !== 'object') return 'Database error';
   const code = err.code;
@@ -83,44 +126,20 @@ async function run() {
   try {
     logger.info('Connecting to PostgreSQL for schema apply');
     await client.connect();
-    logger.info('Executing schema.sql');
-    try {
-      await client.query(sql);
-      logger.info('Schema applied successfully');
-    } catch (err) {
-      if (err.code === '42P07' || err.code === '42710') {
-        logger.warn('Schema appears already applied; skipping DDL', {
-          message: publicMessageForPgError(err),
-          code: err.code,
-        });
-      } else {
-        logger.error('Schema apply failed', {
-          message: publicMessageForPgError(err),
-          code: err?.code,
-        });
-        process.exit(1);
-      }
-    }
+    await ensureMigrationsTable(client);
     const { rows: regRows } = await client.query(
       `SELECT to_regclass('public.users') AS users_table`,
     );
     if (!regRows[0]?.users_table) {
-      logger.error(
-        'public.users is missing. Apply sql/schema.sql to a clean database or fix the schema manually.',
-      );
-      process.exit(1);
+      logger.info('Executing schema.sql');
+      await client.query(sql);
+      logger.info('Schema applied successfully');
+    } else {
+      logger.info('Base schema already present; skipping schema.sql');
     }
 
     try {
-      const migDir = join(__dirname, '../../sql/migrations');
-      const files = (await readdir(migDir))
-        .filter((f) => f.endsWith('.sql'))
-        .sort();
-      for (const f of files) {
-        const msql = await readFile(join(migDir, f), 'utf8');
-        await client.query(msql);
-        logger.info(`Applied migration ${f}`);
-      }
+      await applyTrackedMigrations(client);
     } catch (e) {
       if (e.code === 'ENOENT') {
         logger.warn('sql/migrations directory not found');

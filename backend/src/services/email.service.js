@@ -248,6 +248,85 @@ export async function sendAdminNewUserAlertEmail({ to, newUser }) {
   return sendMail({ to, subject, html, text }, { type: 'admin_new_user' });
 }
 
+function paymentSummary(payment, shipment) {
+  return [
+    `Payment ${payment?.id ?? '—'}`,
+    shipment ? shipmentSummary(shipment) : null,
+    payment?.externalReference ? `Ref ${payment.externalReference}` : null,
+    payment?.currency && payment?.amount !== undefined
+      ? `${payment.currency} ${payment.amount}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+export async function sendPaymentInitiatedEmail({ to, name, payment, shipment }) {
+  const subject = 'Payment initiated — verdiMobility';
+  const summary = paymentSummary(payment, shipment);
+  const text = `Hi ${name},\n\nYour payment workflow has started.\n${summary}\n`;
+  const html = emailTemplate({
+    title: subject,
+    bodyHtml: `<p>Hi ${name},</p><p>Your payment workflow has started.</p><p>${summary}</p>`,
+    bodyText: text,
+  });
+  return sendMail({ to, subject, html, text }, { type: 'payment_initiated' });
+}
+
+export async function sendPaymentCompletedEmail({ to, name, payment, shipment }) {
+  const subject = 'Payment completed — verdiMobility';
+  const summary = paymentSummary(payment, shipment);
+  const text = `Hi ${name},\n\nPayment completed successfully.\n${summary}\n`;
+  const html = emailTemplate({
+    title: subject,
+    bodyHtml: `<p>Hi ${name},</p><p>Your payment has been <strong>completed</strong>.</p><p>${summary}</p>`,
+    bodyText: text,
+  });
+  return sendMail({ to, subject, html, text }, { type: 'payment_completed' });
+}
+
+export async function sendPaymentFailedEmail({ to, name, payment, shipment }) {
+  const subject = 'Payment failed — verdiMobility';
+  const summary = paymentSummary(payment, shipment);
+  const text = `Hi ${name},\n\nPayment failed.\n${summary}\nReason: ${payment?.failureMessage ?? 'Processing error'}\n`;
+  const html = emailTemplate({
+    title: subject,
+    bodyHtml: `<p>Hi ${name},</p><p>Your payment failed.</p><p>${summary}</p><p><strong>Reason:</strong> ${payment?.failureMessage ?? 'Processing error'}</p>`,
+    bodyText: text,
+  });
+  return sendMail({ to, subject, html, text }, { type: 'payment_failed' });
+}
+
+export async function sendPaymentCancelledEmail({ to, name, payment, shipment }) {
+  const subject = 'Payment cancelled — verdiMobility';
+  const summary = paymentSummary(payment, shipment);
+  const text = `Hi ${name},\n\nPayment cancelled.\n${summary}\n`;
+  const html = emailTemplate({
+    title: subject,
+    bodyHtml: `<p>Hi ${name},</p><p>Your payment was cancelled.</p><p>${summary}</p>`,
+    bodyText: text,
+  });
+  return sendMail({ to, subject, html, text }, { type: 'payment_cancelled' });
+}
+
+export async function sendPaymentRefundedEmail({
+  to,
+  name,
+  payment,
+  shipment,
+  refundAmount,
+}) {
+  const subject = 'Payment refunded — verdiMobility';
+  const summary = paymentSummary(payment, shipment);
+  const text = `Hi ${name},\n\nA refund was processed.\n${summary}\nRefund amount: ${payment?.currency ?? 'USD'} ${refundAmount}\n`;
+  const html = emailTemplate({
+    title: subject,
+    bodyHtml: `<p>Hi ${name},</p><p>A refund was processed for your payment.</p><p>${summary}</p><p><strong>Refund amount:</strong> ${payment?.currency ?? 'USD'} ${refundAmount}</p>`,
+    bodyText: text,
+  });
+  return sendMail({ to, subject, html, text }, { type: 'payment_refunded' });
+}
+
 export async function sendDailyDigestEmail({ to, stats }) {
   const subject = 'Daily digest — verdiMobility';
   const text = `Daily stats:\n${JSON.stringify(stats ?? {}, null, 2)}`;
@@ -297,6 +376,21 @@ export function queueShipmentCancelledEmail(ctx) {
 }
 export function queueAdminNewUserAlert(ctx) {
   queueMail(() => sendAdminNewUserAlertEmail(ctx));
+}
+export function queuePaymentInitiatedEmail(ctx) {
+  queueMail(() => sendPaymentInitiatedEmail(ctx));
+}
+export function queuePaymentCompletedEmail(ctx) {
+  queueMail(() => sendPaymentCompletedEmail(ctx));
+}
+export function queuePaymentFailedEmail(ctx) {
+  queueMail(() => sendPaymentFailedEmail(ctx));
+}
+export function queuePaymentCancelledEmail(ctx) {
+  queueMail(() => sendPaymentCancelledEmail(ctx));
+}
+export function queuePaymentRefundedEmail(ctx) {
+  queueMail(() => sendPaymentRefundedEmail(ctx));
 }
 export function queueDailyDigestEmail(ctx) {
   queueMail(() => sendDailyDigestEmail(ctx));

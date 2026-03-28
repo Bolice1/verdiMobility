@@ -15,7 +15,16 @@ CREATE TYPE shipment_status AS ENUM (
 
 CREATE TYPE vehicle_status AS ENUM ('available', 'busy', 'maintenance', 'inactive');
 
-CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
+CREATE TYPE payment_status AS ENUM (
+  'pending',
+  'authorized',
+  'processing',
+  'completed',
+  'failed',
+  'cancelled',
+  'partially_refunded',
+  'refunded'
+);
 
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -128,11 +137,33 @@ CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   shipment_id UUID NOT NULL,
   amount NUMERIC(12, 2) NOT NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'USD',
+  payment_method TEXT NOT NULL DEFAULT 'invoice',
+  provider TEXT NULL,
+  external_reference TEXT NULL,
+  provider_reference TEXT NULL,
   status payment_status NOT NULL DEFAULT 'pending',
+  refunded_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  failure_code TEXT NULL,
+  failure_message TEXT NULL,
+  refund_reason TEXT NULL,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  processed_at TIMESTAMPTZ NULL,
+  refunded_at TIMESTAMPTZ NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT uni_payments_shipment UNIQUE (shipment_id),
   CONSTRAINT fk_payments_shipment FOREIGN KEY (shipment_id) REFERENCES shipments (id) ON DELETE CASCADE,
-  CONSTRAINT payments_amount_positive CHECK (amount > 0)
+  CONSTRAINT payments_amount_positive CHECK (amount > 0),
+  CONSTRAINT payments_refunded_amount_nonnegative CHECK (refunded_amount >= 0 AND refunded_amount <= amount),
+  CONSTRAINT payments_currency_format CHECK (currency ~ '^[A-Z]{3}$')
 );
 
 CREATE INDEX idx_payments_shipment ON payments (shipment_id);
 CREATE INDEX idx_payments_status ON payments (status);
+CREATE UNIQUE INDEX idx_payments_external_reference
+  ON payments (external_reference)
+  WHERE external_reference IS NOT NULL;
+CREATE UNIQUE INDEX idx_payments_provider_reference
+  ON payments (provider_reference)
+  WHERE provider_reference IS NOT NULL;
