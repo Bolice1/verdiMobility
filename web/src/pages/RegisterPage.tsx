@@ -42,7 +42,18 @@ export function RegisterPage() {
             }
             setSubmitting(true);
             try {
-              await register(form);
+              await register({
+                name: form.name.trim(),
+                email: form.email.trim(),
+                password: form.password,
+                role: form.role,
+                companyName:
+                  form.role === 'company' ? form.companyName.trim() || undefined : undefined,
+                companyEmail:
+                  form.role === 'company' ? form.companyEmail.trim() || undefined : undefined,
+                licenseNumber:
+                  form.role === 'driver' ? form.licenseNumber.trim() || undefined : undefined,
+              });
               navigate('/dashboard');
             } catch (err) {
               setError(err instanceof Error ? err.message : 'Unable to register');

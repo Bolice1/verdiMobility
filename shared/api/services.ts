@@ -11,6 +11,7 @@ import type {
   Shipment,
   User,
   Vehicle,
+  VehicleLocationUpdateInput,
 } from '../types';
 
 type TokenBridge = {
@@ -78,6 +79,8 @@ export function createVerdiApi(baseUrl: string, bridge: TokenBridge) {
       create: (payload: Record<string, unknown>) => client.post<Vehicle>('/api/vehicles', payload),
       update: (id: string, payload: Record<string, unknown>) =>
         client.patch<Vehicle>(`/api/vehicles/${id}`, payload),
+      updateLocation: (id: string, payload: VehicleLocationUpdateInput) =>
+        client.patch<Vehicle>(`/api/vehicles/${id}/location`, payload),
       marketplace: (query?: Record<string, string | number | undefined>) =>
         client.get<PaginatedResponse<Vehicle>>('/api/marketplace/vehicles', query),
     },

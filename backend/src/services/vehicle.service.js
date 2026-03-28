@@ -1,6 +1,7 @@
 import { pool } from '../database/pool.js';
 import * as driverModel from '../models/driver.model.js';
 import * as vehicleModel from '../models/vehicle.model.js';
+import { publishVehicleUpdate } from '../realtime/vehicleUpdates.js';
 import { AppError } from '../utils/AppError.js';
 import { paginationMeta } from '../utils/pagination.js';
 
@@ -31,6 +32,7 @@ export async function createVehicle(actor, input) {
       currentLocationLabel: input.currentLocationLabel,
       availableCargoSpace: input.availableCargoSpace,
     });
+    publishVehicleUpdate('created', vehicle, { source: 'vehicle.create' });
     return vehicle;
   } catch (err) {
     if (err.code === '23505') {
@@ -98,6 +100,7 @@ export async function updateVehicle(actor, vehicleId, patch) {
   const client = await pool.connect();
   try {
     const updated = await vehicleModel.updateVehicle(client, vehicleId, patch);
+    publishVehicleUpdate('updated', updated, { source: 'vehicle.update' });
     return updated;
   } catch (err) {
     if (err.code === '23505') {
@@ -115,4 +118,32 @@ export async function listMarketplaceVehicles(query) {
     data: rows,
     meta: paginationMeta({ total, limit: query.limit, offset: query.offset }),
   };
+}
+
+async function assertVehicleTrackingAccess(actor, vehicle) {
+  if (actor.role === 'admin') return;
+  if (actor.role === 'company' && actor.companyId === vehicle.companyId) return;
+  if (actor.role === 'driver' && vehicle.driverId) {
+    const driver = await driverModel.findDriverById(vehicle.driverId);
+    if (driver?.userId === actor.id) return;
+  }
+  throw new AppError('Forbidden', 403, 'FORBIDDEN');
+}
+
+export async function updateVehicleLocation(actor, vehicleId, patch) {
+  const vehicle = await vehicleModel.findVehicleById(vehicleId);
+  if (!vehicle) {
+    throw new AppError('Vehicle not found', 404, 'NOT_FOUND');
+  }
+
+  await assertVehicleTrackingAccess(actor, vehicle);
+
+  const client = await pool.connect();
+  try {
+    const updated = await vehicleModel.updateVehicle(client, vehicleId, patch);
+    publishVehicleUpdate('location', updated, { source: 'vehicle.location' });
+    return updated;
+  } finally {
+    client.release();
+  }
 }

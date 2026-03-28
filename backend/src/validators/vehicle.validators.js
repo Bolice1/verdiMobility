@@ -52,6 +52,13 @@ export const patchVehicleSchema = z
     message: 'At least one field is required',
   });
 
+export const patchVehicleLocationSchema = z.object({
+  currentLatitude: z.coerce.number().min(-90).max(90),
+  currentLongitude: z.coerce.number().min(-180).max(180),
+  currentLocationLabel: z.string().min(2).max(120).optional(),
+  availableCargoSpace: z.coerce.number().nonnegative().max(1_000_000).optional(),
+});
+
 export const marketplaceVehiclesQuerySchema = z
   .object({
     destination: z.string().min(1).max(255).optional(),

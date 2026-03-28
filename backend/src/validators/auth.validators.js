@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
 const roleEnum = z.enum(['admin', 'user', 'driver', 'company']);
+const optionalTrimmed = (schema) =>
+  z.preprocess((value) => {
+    if (typeof value !== 'string') return value;
+    const trimmed = value.trim();
+    return trimmed === '' ? undefined : trimmed;
+  }, schema.optional());
 
 export const registerSchema = z
   .object({
@@ -8,9 +14,9 @@ export const registerSchema = z
     email: z.string().email().max(320),
     password: z.string().min(10).max(128),
     role: roleEnum.optional().default('user'),
-    licenseNumber: z.string().min(3).max(64).optional(),
-    companyName: z.string().min(1).max(200).optional(),
-    companyEmail: z.string().email().max(320).optional(),
+    licenseNumber: optionalTrimmed(z.string().min(3).max(64)),
+    companyName: optionalTrimmed(z.string().min(1).max(200)),
+    companyEmail: optionalTrimmed(z.string().email().max(320)),
   })
   .superRefine((data, ctx) => {
     if (data.role === 'driver' && !data.licenseNumber) {

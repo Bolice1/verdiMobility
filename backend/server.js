@@ -5,6 +5,7 @@ import http from 'node:http';
 import { createApp } from './src/app.js';
 import { env, assertRequiredEnv } from './src/config/index.js';
 import { closePool, verifyDatabaseConnection } from './src/config/database.js';
+import { attachVehicleRealtimeServer } from './src/realtime/vehicleUpdates.js';
 import { logger } from './src/utils/logger.js';
 
 const PORT = Number.parseInt(process.env.PORT || '5987', 10) || 5987;
@@ -33,6 +34,7 @@ async function main() {
 
   const app = createApp();
   const server = http.createServer(app);
+  attachVehicleRealtimeServer(server);
 
   server.listen(PORT, () => {
     logger.info(`verdiMobility API listening on port ${PORT}`, {

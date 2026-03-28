@@ -63,6 +63,13 @@ export type Vehicle = {
   activePickupLocation?: string | null;
 };
 
+export type VehicleLocationUpdateInput = {
+  currentLatitude: number;
+  currentLongitude: number;
+  currentLocationLabel?: string;
+  availableCargoSpace?: number;
+};
+
 export type Shipment = {
   id: string;
   senderId: string;

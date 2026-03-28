@@ -8,6 +8,7 @@ import {
   createVehicleSchema,
   listVehiclesQuerySchema,
   patchVehicleSchema,
+  patchVehicleLocationSchema,
   vehicleIdParamsSchema,
 } from '../validators/vehicle.validators.js';
 
@@ -178,6 +179,14 @@ router.patch(
   validate(vehicleIdParamsSchema, 'params'),
   validate(patchVehicleSchema, 'body'),
   vehicleController.patch,
+);
+
+router.patch(
+  '/:id/location',
+  sanitizeBody,
+  validate(vehicleIdParamsSchema, 'params'),
+  validate(patchVehicleLocationSchema, 'body'),
+  vehicleController.patchLocation,
 );
 
 export default router;

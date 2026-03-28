@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { getPasswordRuleStatus, isStrongPassword } from '../../../shared/utils/validation';
+import { getPasswordRuleStatus, isStrongPassword, isValidEmail } from '../../../shared/utils/validation';
 import { Card } from '../components/Card';
 import { Field } from '../components/Field';
 import { Screen } from '../components/Screen';
@@ -29,13 +29,22 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
         <Pressable
           style={styles.primary}
           onPress={async () => {
+            if (!isValidEmail(email)) {
+              setError('Enter a valid email address.');
+              return;
+            }
             if (!isStrongPassword(password)) {
               setError('Password does not meet security policy.');
               return;
             }
             setError('');
             try {
-              await register({ name, email, password, role: 'user' });
+              await register({
+                name: name.trim(),
+                email: email.trim(),
+                password,
+                role: 'user',
+              });
             } catch (err) {
               setError(err instanceof Error ? err.message : 'Failed to register');
             }

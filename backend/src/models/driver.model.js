@@ -28,7 +28,6 @@ export async function findDriverById(id) {
   return rows[0] ?? null;
 }
 
-<<<<<<< HEAD
 export async function findDriverWithUserById(id) {
   const { rows } = await pool.query(
     `SELECT d.license_number AS "licenseNumber", u.name, u.email
@@ -36,13 +35,6 @@ export async function findDriverWithUserById(id) {
      INNER JOIN users u ON u.id = d.user_id
      WHERE d.id = $1`,
     [id],
-=======
-export async function updateDriverRating(client, driverId, rating) {
-  const { rows } = await client.query(
-    `UPDATE drivers SET rating = $2 WHERE id = $1
-     RETURNING id, user_id AS "userId", license_number AS "licenseNumber", rating`,
-    [driverId, rating],
->>>>>>> 9cecc71706a9a6f1e8b13f70072761e73714b871
   );
   return rows[0] ?? null;
 }
