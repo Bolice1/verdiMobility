@@ -13,6 +13,8 @@ export async function getProfile(userId) {
     email: user.email,
     role: user.role,
     companyId: user.companyId ?? null,
+    emailVerified: Boolean(user.emailVerified),
+    suspended: Boolean(user.suspended),
     createdAt: user.createdAt,
   };
 }
@@ -29,6 +31,8 @@ export async function listUsersPaginated({ limit, offset }) {
       email: u.email,
       role: u.role,
       companyId: u.companyId ?? null,
+      emailVerified: Boolean(u.emailVerified),
+      suspended: Boolean(u.suspended),
       createdAt: u.createdAt,
     })),
     meta: paginationMeta({ total, limit, offset }),

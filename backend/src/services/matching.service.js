@@ -4,6 +4,7 @@ import * as vehicleModel from '../models/vehicle.model.js';
 import { env } from '../config/index.js';
 import { AppError } from '../utils/AppError.js';
 import { destinationsAreSimilar } from '../utils/destinationSimilarity.js';
+import { queueShipmentStatusEmails } from './shipmentNotifications.js';
 
 function scoreV1(vehicle, shipment, pastDestinations) {
   if (Number(vehicle.capacity) < Number(shipment.weight)) {
@@ -108,6 +109,18 @@ export async function runMatching({ shipmentId, limit }, actor) {
     }
 
     await client.query('COMMIT');
+
+    for (const m of matches) {
+      if (m.shipment && m.vehicleId) {
+        queueShipmentStatusEmails({
+          shipment: m.shipment,
+          previousStatus: 'pending',
+          nextStatus: 'matched',
+          requestId: undefined,
+        });
+      }
+    }
+
     return { processed: pending.length, results: matches };
   } catch (e) {
     await client.query('ROLLBACK');

@@ -5,6 +5,8 @@ export function requestLogger(req, res, next) {
   res.on('finish', () => {
     const durationMs = Date.now() - started;
     const logPayload = {
+      requestId: req.id,
+      userId: req.user?.id,
       method: req.method,
       path: req.originalUrl ?? req.url,
       statusCode: res.statusCode,
