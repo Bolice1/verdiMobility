@@ -119,3 +119,27 @@ export async function updateShipmentStatus(actor, id, nextStatus) {
     client.release();
   }
 }
+
+export async function updateShipmentImpact(actor, id, patch) {
+  if (actor.role !== 'admin') {
+    throw new AppError('Forbidden', 403, 'FORBIDDEN');
+  }
+
+  const shipment = await shipmentModel.findShipmentById(id);
+  if (!shipment) {
+    throw new AppError('Shipment not found', 404, 'NOT_FOUND');
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const updated = await shipmentModel.updateShipmentImpact(client, id, patch);
+    await client.query('COMMIT');
+    return updated;
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+}

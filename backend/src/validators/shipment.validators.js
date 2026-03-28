@@ -35,3 +35,12 @@ export const shipmentIdParamsSchema = z.object({
 export const patchShipmentStatusSchema = z.object({
   status: statusEnum,
 });
+
+export const patchShipmentImpactSchema = z.object({
+  distanceKm: z.coerce.number().positive().max(1_000_000).optional(),
+  baselineDistanceKm: z.coerce.number().positive().max(1_000_000).optional(),
+  fuelSavedLiters: z.coerce.number().nonnegative().max(1_000_000).optional(),
+  co2SavedKg: z.coerce.number().nonnegative().max(1_000_000).optional(),
+}).refine((obj) => Object.keys(obj).length > 0, {
+  message: 'At least one impact field is required',
+});

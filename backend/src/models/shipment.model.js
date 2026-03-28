@@ -8,7 +8,9 @@ export async function insertShipment(
     `INSERT INTO shipments (sender_id, pickup_location, destination, weight, price)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-               destination, weight, status, price, created_at AS "createdAt"`,
+               destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+               fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+               status, price, created_at AS "createdAt"`,
     [senderId, pickupLocation, destination, weight, price],
   );
   return rows[0];
@@ -17,7 +19,9 @@ export async function insertShipment(
 export async function findShipmentById(id) {
   const { rows } = await pool.query(
     `SELECT id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-            destination, weight, status, price, created_at AS "createdAt"
+            destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+            fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+            status, price, created_at AS "createdAt"
      FROM shipments WHERE id = $1`,
     [id],
   );
@@ -28,7 +32,9 @@ export async function updateShipmentStatus(client, id, status) {
   const { rows } = await client.query(
     `UPDATE shipments SET status = $2 WHERE id = $1
      RETURNING id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-               destination, weight, status, price, created_at AS "createdAt"`,
+               destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+               fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+               status, price, created_at AS "createdAt"`,
     [id, status],
   );
   return rows[0] ?? null;
@@ -40,7 +46,9 @@ export async function assignVehicleToShipment(client, shipmentId, vehicleId) {
      SET vehicle_id = $2, status = CASE WHEN status = 'pending' THEN 'matched'::shipment_status ELSE status END
      WHERE id = $1
      RETURNING id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-               destination, weight, status, price, created_at AS "createdAt"`,
+               destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+               fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+               status, price, created_at AS "createdAt"`,
     [shipmentId, vehicleId],
   );
   return rows[0] ?? null;
@@ -115,8 +123,10 @@ export async function listShipmentsForActor({ actor, limit, offset, status }) {
   values.push(limit, offset);
   const { rows } = await pool.query(
     `SELECT s.id, s.sender_id AS "senderId", s.vehicle_id AS "vehicleId",
-            s.pickup_location AS "pickupLocation", s.destination, s.weight, s.status, s.price,
-            s.created_at AS "createdAt"
+            s.pickup_location AS "pickupLocation", s.destination, s.weight, s.distance_km AS "distanceKm",
+            s.baseline_distance_km AS "baselineDistanceKm", s.fuel_saved_l AS "fuelSavedLiters",
+            s.co2_saved_kg AS "co2SavedKg",
+            s.status, s.price, s.created_at AS "createdAt"
      ${fromSql}
      ${where}
      ORDER BY s.created_at DESC
@@ -124,4 +134,40 @@ export async function listShipmentsForActor({ actor, limit, offset, status }) {
     values,
   );
   return { rows, total };
+}
+
+export async function updateShipmentImpact(client, id, patch) {
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  if ('distanceKm' in patch) {
+    fields.push(`distance_km = $${i++}`);
+    values.push(patch.distanceKm);
+  }
+  if ('baselineDistanceKm' in patch) {
+    fields.push(`baseline_distance_km = $${i++}`);
+    values.push(patch.baselineDistanceKm);
+  }
+  if ('fuelSavedLiters' in patch) {
+    fields.push(`fuel_saved_l = $${i++}`);
+    values.push(patch.fuelSavedLiters);
+  }
+  if ('co2SavedKg' in patch) {
+    fields.push(`co2_saved_kg = $${i++}`);
+    values.push(patch.co2SavedKg);
+  }
+
+  if (!fields.length) return null;
+
+  values.push(id);
+  const { rows } = await client.query(
+    `UPDATE shipments SET ${fields.join(', ')} WHERE id = $${i}
+     RETURNING id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
+               destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+               fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+               status, price, created_at AS "createdAt"`,
+    values,
+  );
+  return rows[0] ?? null;
 }
