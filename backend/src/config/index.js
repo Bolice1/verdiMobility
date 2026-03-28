@@ -1,7 +1,8 @@
 const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
 
+const portRaw = process.env.PORT;
 export const env = {
-  port: Number.parseInt(process.env.PORT ?? '4000', 10),
+  port: Number.parseInt(portRaw && portRaw !== '' ? portRaw : '4000', 10) || 4000,
   nodeEnv: process.env.NODE_ENV ?? 'development',
   isProduction: process.env.NODE_ENV === 'production',
 

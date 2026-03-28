@@ -12,6 +12,11 @@ export function errorHandler(err, req, res, next) {
     return;
   }
 
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    res.status(400).json({ error: 'Invalid JSON payload', code: 'INVALID_JSON' });
+    return;
+  }
+
   if (isZodError(err)) {
     logger.warn('Validation error', {
       path: req.originalUrl,

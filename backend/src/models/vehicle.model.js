@@ -58,7 +58,7 @@ export async function updateVehicle(client, id, patch) {
   return rows[0] ?? null;
 }
 
-export async function listVehiclesForQuery({ companyId, status, limit, offset }) {
+export async function listVehiclesForQuery({ companyId, driverId, status, limit, offset }) {
   const conditions = [];
   const values = [];
   let idx = 1;
@@ -66,6 +66,10 @@ export async function listVehiclesForQuery({ companyId, status, limit, offset })
   if (companyId) {
     conditions.push(`company_id = $${idx++}`);
     values.push(companyId);
+  }
+  if (driverId) {
+    conditions.push(`driver_id = $${idx++}`);
+    values.push(driverId);
   }
   if (status) {
     conditions.push(`status = $${idx++}`);

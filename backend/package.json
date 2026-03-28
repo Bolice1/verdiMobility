@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "db:schema": "node src/database/applySchema.js"
+    "db:schema": "node src/database/runSchema.js"
   },
   "keywords": [
     "logistics",
