@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Navigation, Package, CheckCircle, Bell, Truck } from 'lucide-react';
+import { MapPin, Navigation, Package, CheckCircle, Bell, Truck, Settings as SettingsIcon } from 'lucide-react';
 
 const DriverDashboard = () => {
   const [isAvailable, setIsAvailable] = useState(false);
@@ -140,6 +140,13 @@ const DriverDashboard = () => {
         <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--color-text-muted)' }}>
           <MapPin size={24} />
           <span style={{ fontSize: '0.65rem', marginTop: '4px', fontWeight: 500 }}>Map</span>
+        </button>
+        <button 
+          onClick={() => window.location.href='/driver/settings'}
+          style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+        >
+          <SettingsIcon size={24} />
+          <span style={{ fontSize: '0.65rem', marginTop: '4px', fontWeight: 500 }}>Settings</span>
         </button>
         <button 
           onClick={() => { localStorage.removeItem('verdimo_user'); window.location.href='/login'; }}

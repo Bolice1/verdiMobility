@@ -12,6 +12,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import GlobalDashboard from './pages/admin/GlobalDashboard';
 import SystemUsers from './pages/admin/SystemUsers';
 import SystemAudit from './pages/admin/SystemAudit';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
             <Route path="overview" element={<GlobalDashboard />} />
             <Route path="users" element={<SystemUsers />} />
             <Route path="audit" element={<SystemAudit />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
 
@@ -43,6 +45,7 @@ function App() {
             <Route path="fleet" element={<Fleet />} />
             <Route path="find-drivers" element={<FindDrivers />} />
             <Route path="drivers" element={<Drivers />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
 
@@ -50,12 +53,14 @@ function App() {
         <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']} />}>
           <Route index element={<Navigate to="/driver/dashboard" replace />} />
           <Route path="dashboard" element={<DriverDashboard />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         {/* Customer / Client Routes */}
         <Route path="/customer" element={<ProtectedRoute allowedRoles={['customer']} />}>
           <Route index element={<Navigate to="/customer/dashboard" replace />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/login" replace />} />
