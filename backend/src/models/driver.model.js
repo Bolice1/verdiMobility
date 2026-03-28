@@ -27,3 +27,12 @@ export async function findDriverById(id) {
   );
   return rows[0] ?? null;
 }
+
+export async function updateDriverRating(client, driverId, rating) {
+  const { rows } = await client.query(
+    `UPDATE drivers SET rating = $2 WHERE id = $1
+     RETURNING id, user_id AS "userId", license_number AS "licenseNumber", rating`,
+    [driverId, rating],
+  );
+  return rows[0] ?? null;
+}

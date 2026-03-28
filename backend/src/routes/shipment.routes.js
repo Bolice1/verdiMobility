@@ -8,6 +8,7 @@ import {
   createShipmentSchema,
   listShipmentsQuerySchema,
   patchShipmentStatusSchema,
+  patchShipmentImpactSchema,
   shipmentIdParamsSchema,
 } from '../validators/shipment.validators.js';
 
@@ -29,6 +30,14 @@ router.patch(
   validate(shipmentIdParamsSchema, 'params'),
   validate(patchShipmentStatusSchema, 'body'),
   shipmentController.patchStatus,
+);
+
+router.patch(
+  '/:id/impact',
+  sanitizeBody,
+  validate(shipmentIdParamsSchema, 'params'),
+  validate(patchShipmentImpactSchema, 'body'),
+  shipmentController.patchImpact,
 );
 
 export default router;
