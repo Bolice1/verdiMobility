@@ -9,6 +9,9 @@ import Drivers from './pages/Drivers';
 import FindDrivers from './pages/company/FindDrivers';
 import DriverDashboard from './pages/driver/DriverDashboard';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
+import GlobalDashboard from './pages/admin/GlobalDashboard';
+import SystemUsers from './pages/admin/SystemUsers';
+import SystemAudit from './pages/admin/SystemAudit';
 import './App.css';
 
 function App() {
@@ -25,10 +28,10 @@ function App() {
         {/* Super Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route element={<Layout />}>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="fleet" element={<Fleet />} />
-            <Route path="drivers" element={<Drivers />} />
+            <Route index element={<Navigate to="/admin/overview" replace />} />
+            <Route path="overview" element={<GlobalDashboard />} />
+            <Route path="users" element={<SystemUsers />} />
+            <Route path="audit" element={<SystemAudit />} />
           </Route>
         </Route>
 

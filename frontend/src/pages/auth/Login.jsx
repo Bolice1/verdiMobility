@@ -10,15 +10,21 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // In reality, this would be an API call to your backend
-    // For now, we mock the session so the UI paths work
-    localStorage.setItem('verdimo_user', JSON.stringify({ email, role, name: 'Demo User' }));
+    
+    let resolvedRole = role;
+    
+    // Hardcoded Super Admin Check
+    if (email === 'admin1@gmail.com' && password === '123456') {
+      resolvedRole = 'admin';
+    }
+
+    localStorage.setItem('verdimo_user', JSON.stringify({ email, role: resolvedRole, name: 'Admin User' }));
     
     // Redirect based on role
-    if (role === 'driver') navigate('/driver/dashboard');
-    else if (role === 'company') navigate('/company/dashboard');
-    else if (role === 'customer') navigate('/customer/dashboard');
-    else navigate('/admin/dashboard');
+    if (resolvedRole === 'driver') navigate('/driver/dashboard');
+    else if (resolvedRole === 'company') navigate('/company/dashboard');
+    else if (resolvedRole === 'customer') navigate('/customer/dashboard');
+    else navigate('/admin/overview');
   };
 
   return (

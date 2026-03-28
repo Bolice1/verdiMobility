@@ -6,11 +6,22 @@ const Sidebar = () => {
   const userStr = localStorage.getItem('verdimo_user');
   const user = userStr ? JSON.parse(userStr) : { role: 'admin' };
 
-  let navItems = [
-    { path: `/${user.role}/dashboard`, name: 'Overview', icon: LayoutDashboard },
-    { path: `/${user.role}/fleet`, name: 'Fleet Status', icon: Truck },
-    { path: `/${user.role}/drivers`, name: 'Drivers', icon: Users },
-  ];
+  let navItems = [];
+
+  if (user.role === 'admin') {
+    navItems = [
+      { path: '/admin/overview', name: 'Global Overview', icon: LayoutDashboard },
+      { path: '/admin/users', name: 'All Users', icon: Users },
+      { path: '/admin/audit', name: 'Audit Logs', icon: MapPin }, // Map pin or activity icon
+    ];
+  } else {
+    // Default / Company routes
+    navItems = [
+      { path: `/${user.role}/dashboard`, name: 'Dashboard Overview', icon: LayoutDashboard },
+      { path: `/${user.role}/fleet`, name: 'Fleet Status', icon: Truck },
+      { path: `/${user.role}/drivers`, name: 'Your Drivers', icon: Users },
+    ];
+  }
 
   if (user.role === 'company') {
     navItems.push({ path: '/company/find-drivers', name: 'Find Carriers', icon: Search });
