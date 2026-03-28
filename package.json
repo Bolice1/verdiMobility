@@ -1,0 +1,15 @@
+{
+  "name": "verdimobility-platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace web run dev",
+    "dev:mobile": "npm --workspace mobile run start",
+    "dev:backend": "npm --workspace backend run dev",
+    "build:web": "npm --workspace web run build"
+  }
+}

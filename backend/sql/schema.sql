@@ -84,9 +84,23 @@ CREATE TABLE vehicles (
   plate_number TEXT NOT NULL UNIQUE,
   capacity NUMERIC(12, 2) NOT NULL,
   status vehicle_status NOT NULL DEFAULT 'available',
+  current_latitude NUMERIC(9, 6) NULL,
+  current_longitude NUMERIC(9, 6) NULL,
+  current_location_label TEXT NULL,
+  available_cargo_space NUMERIC(12, 2) NULL,
+  last_location_updated_at TIMESTAMPTZ NULL,
   CONSTRAINT fk_vehicles_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
   CONSTRAINT fk_vehicles_driver FOREIGN KEY (driver_id) REFERENCES drivers (id) ON DELETE SET NULL,
-  CONSTRAINT vehicles_capacity_positive CHECK (capacity > 0)
+  CONSTRAINT vehicles_capacity_positive CHECK (capacity > 0),
+  CONSTRAINT vehicles_latitude_range CHECK (
+    current_latitude IS NULL OR (current_latitude >= -90 AND current_latitude <= 90)
+  ),
+  CONSTRAINT vehicles_longitude_range CHECK (
+    current_longitude IS NULL OR (current_longitude >= -180 AND current_longitude <= 180)
+  ),
+  CONSTRAINT vehicles_available_cargo_space_nonnegative CHECK (
+    available_cargo_space IS NULL OR available_cargo_space >= 0
+  )
 );
 
 CREATE INDEX idx_vehicles_company ON vehicles (company_id);

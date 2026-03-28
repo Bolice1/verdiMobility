@@ -15,3 +15,8 @@ export const patch = asyncHandler(async (req, res) => {
   const updated = await vehicleService.updateVehicle(req.user, req.params.id, req.body);
   res.json(updated);
 });
+
+export const marketplace = asyncHandler(async (req, res) => {
+  const result = await vehicleService.listMarketplaceVehicles(req.query);
+  res.json(result);
+});

@@ -26,6 +26,10 @@ export async function createVehicle(actor, input) {
       plateNumber: input.plateNumber,
       capacity: input.capacity,
       status: input.status,
+      currentLatitude: input.currentLatitude,
+      currentLongitude: input.currentLongitude,
+      currentLocationLabel: input.currentLocationLabel,
+      availableCargoSpace: input.availableCargoSpace,
     });
     return vehicle;
   } catch (err) {
@@ -42,7 +46,7 @@ export async function createVehicle(actor, input) {
 }
 
 export async function listVehicles(actor, query) {
-  let { companyId, status, limit, offset } = query;
+  let { companyId, status, destination, minAvailableCapacity, limit, offset } = query;
   let driverId;
 
   if (actor.role === 'company') {
@@ -66,6 +70,8 @@ export async function listVehicles(actor, query) {
     companyId: companyId ?? undefined,
     driverId,
     status: status ?? undefined,
+    destination: destination ?? undefined,
+    minAvailableCapacity,
     limit,
     offset,
   });
@@ -101,4 +107,12 @@ export async function updateVehicle(actor, vehicleId, patch) {
   } finally {
     client.release();
   }
+}
+
+export async function listMarketplaceVehicles(query) {
+  const { rows, total } = await vehicleModel.listMarketplaceVehicles(query);
+  return {
+    data: rows,
+    meta: paginationMeta({ total, limit: query.limit, offset: query.offset }),
+  };
 }

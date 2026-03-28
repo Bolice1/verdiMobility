@@ -10,6 +10,7 @@ import vehicleRoutes from './vehicle.routes.js';
 import ratingRoutes from './rating.routes.js';
 import analyticsRoutes from './analytics.routes.js';
 import paymentRoutes from './payment.routes.js';
+import marketplaceRoutes from './marketplace.routes.js';
 
 const api = Router();
 
@@ -23,5 +24,6 @@ api.use('/matching', matchingRoutes);
 api.use('/ratings', ratingRoutes);
 api.use('/analytics', analyticsRoutes);
 api.use('/payments', paymentRoutes);
+api.use('/marketplace', marketplaceRoutes);
 
 export default api;
