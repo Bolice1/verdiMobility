@@ -25,6 +25,9 @@ export const env = {
   bcryptRounds: Number.parseInt(process.env.BCRYPT_ROUNDS ?? '12', 10),
 
   appUrl: (process.env.APP_URL || `http://localhost:${portNum}`).replace(/\/$/, ''),
+  frontendUrl: (process.env.FRONTEND_URL || '').replace(/\/$/, ''),
+  emailVerificationUrl: process.env.EMAIL_VERIFICATION_URL ?? '',
+  passwordResetUrl: process.env.PASSWORD_RESET_URL ?? '',
 
   emailEnabled: process.env.EMAIL_ENABLED === 'true',
   requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === 'true',
@@ -37,6 +40,10 @@ export const env = {
   emailFrom: process.env.EMAIL_FROM ?? 'verdiMobility <no-reply@verdimobility.com>',
 
   adminAlertEmail: process.env.ADMIN_ALERT_EMAIL ?? '',
+
+  paymentDefaultCurrency: (process.env.PAYMENT_DEFAULT_CURRENCY ?? 'USD')
+    .trim()
+    .toUpperCase(),
 };
 
 export function assertRequiredEnv() {

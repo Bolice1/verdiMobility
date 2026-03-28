@@ -33,6 +33,26 @@ function buildTokenPayload(user) {
   };
 }
 
+function withToken(url, token) {
+  const joiner = url.includes('?') ? '&' : '?';
+  return `${url}${joiner}token=${encodeURIComponent(token)}`;
+}
+
+function resolveTokenActionUrl({ explicitUrl, frontendPath, apiPath, token }) {
+  const template = explicitUrl?.trim();
+  if (template) {
+    return template.includes('{token}')
+      ? template.replaceAll('{token}', encodeURIComponent(token))
+      : withToken(template, token);
+  }
+
+  if (env.frontendUrl) {
+    return withToken(`${env.frontendUrl}${frontendPath}`, token);
+  }
+
+  return withToken(`${env.appUrl}${apiPath}`, token);
+}
+
 async function assertEmailAllowed(email) {
   const sentinel = await validateEmailSentinel(email);
   if (!sentinel.valid) {
@@ -94,7 +114,12 @@ export async function register(input) {
 
     await client.query('COMMIT');
 
-    const verificationUrl = `${env.appUrl}/api/auth/verify-email?token=${encodeURIComponent(rawVerifyToken)}`;
+    const verificationUrl = resolveTokenActionUrl({
+      explicitUrl: env.emailVerificationUrl,
+      frontendPath: '/verify-email',
+      apiPath: '/api/auth/verify-email',
+      token: rawVerifyToken,
+    });
     emailService.queueWelcomeEmail({ to: input.email, name: input.name });
     emailService.queueEmailVerification({
       to: input.email,
@@ -225,7 +250,12 @@ export async function requestPasswordReset({ email }) {
   } finally {
     client.release();
   }
-  const resetUrl = `${env.appUrl}/api/auth/reset-password?token=${encodeURIComponent(raw)}`;
+  const resetUrl = resolveTokenActionUrl({
+    explicitUrl: env.passwordResetUrl,
+    frontendPath: '/reset-password',
+    apiPath: '/api/auth/reset-password',
+    token: raw,
+  });
   emailService.queuePasswordResetEmail({
     to: user.email,
     name: user.name,
