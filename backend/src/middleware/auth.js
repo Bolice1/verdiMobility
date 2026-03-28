@@ -43,3 +43,8 @@ export function requireRoles(...roles) {
     next();
   };
 }
+
+/** Single-role guard for admin dashboard routes */
+export function requireRole(role) {
+  return requireRoles(role);
+}
