@@ -3,6 +3,7 @@ import * as driverModel from '../models/driver.model.js';
 import * as shipmentModel from '../models/shipment.model.js';
 import * as userModel from '../models/user.model.js';
 import * as vehicleModel from '../models/vehicle.model.js';
+import { env } from '../config/index.js';
 import { AppError } from '../utils/AppError.js';
 import { paginationMeta } from '../utils/pagination.js';
 import * as emailService from './email.service.js';
@@ -47,6 +48,35 @@ export async function createShipment(actor, input, requestId) {
     throw new AppError('Only senders can create shipments', 403, 'FORBIDDEN');
   }
   const senderId = actor.id;
+
+  let distanceKm = null;
+  let baselineDistanceKm = null;
+  let fuelSavedLiters = null;
+  let co2SavedKg = null;
+
+  if (env.googleMapsApiKey) {
+    try {
+      const metrics = await getDrivingMetrics({
+        origin: input.pickupLocation,
+        destination: input.destination,
+      });
+      if (metrics?.distanceKm) {
+        distanceKm = metrics.distanceKm;
+        baselineDistanceKm = metrics.distanceKm;
+        const impact = estimateImpact({
+          distanceKm,
+          baselineDistanceKm,
+          litersPer100km: env.vehicleLitersPer100km,
+        });
+        fuelSavedLiters = impact.fuelSavedLiters ?? null;
+        co2SavedKg = impact.co2SavedKg ?? null;
+      }
+    } catch (e) {
+      // Soft-fail on distance lookup; still create shipment
+      console.warn('maps_distance_failed', e?.message ?? e);
+    }
+  }
+
   const client = await pool.connect();
   try {
     const created = await shipmentModel.insertShipment(client, {
@@ -55,6 +85,10 @@ export async function createShipment(actor, input, requestId) {
       destination: input.destination,
       weight: input.weight,
       price: input.price,
+      distanceKm,
+      baselineDistanceKm,
+      fuelSavedLiters,
+      co2SavedKg,
     });
     const sender = await userModel.findUserEmailAndNameById(senderId);
     if (sender?.email) {
