@@ -25,3 +25,12 @@ export const patchStatus = asyncHandler(async (req, res) => {
   );
   res.json(updated);
 });
+
+export const patchImpact = asyncHandler(async (req, res) => {
+  const updated = await shipmentService.updateShipmentImpact(
+    req.user,
+    req.params.id,
+    req.body,
+  );
+  res.json(updated);
+});

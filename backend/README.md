@@ -85,5 +85,9 @@ For managed cloud databases, append SSL params as required by the provider (ofte
 | GET | `/api/vehicles` | Admin (optional `companyId`), `company`, or `driver` |
 | PATCH | `/api/vehicles/:id` | |
 | POST | `/api/matching/run` | Admin or `company`; body optional `shipmentId`, `limit` |
+| POST | `/api/ratings` | Sender or admin; body `{ shipmentId, rating, review? }` |
+| GET | `/api/ratings/drivers/:driverId` | Authenticated; list ratings + average |
+| PATCH | `/api/shipments/:id/impact` | Admin; set `distanceKm`, `baselineDistanceKm`, `fuelSavedLiters`, `co2SavedKg` |
+| GET | `/api/analytics/impact` | Admin/company; aggregate CO₂/fuel/distance stats |
 
 Matching assigns `pending` shipments to `available` vehicles with sufficient capacity; if the vehicle has prior deliveries, destination similarity is required (historical `shipments.destination`). New vehicles with no history can still match (cold start).
