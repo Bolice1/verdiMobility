@@ -22,6 +22,10 @@ export const env = {
   rateLimitMax: Number.parseInt(process.env.RATE_LIMIT_MAX ?? '200', 10),
 
   bcryptRounds: Number.parseInt(process.env.BCRYPT_ROUNDS ?? '12', 10),
+
+  googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
+  matchingScorer: process.env.MATCHING_SCORER ?? 'v1',
+  vehicleLitersPer100km: Number.parseFloat(process.env.VEHICLE_L_PER_100KM ?? '8'),
 };
 
 export function assertRequiredEnv() {

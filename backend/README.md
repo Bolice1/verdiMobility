@@ -13,7 +13,8 @@ Production-oriented logistics backend (Express, PostgreSQL, JWT, Zod, Winston).
 cd backend
 npm install
 cp .env.example .env
-# Edit .env: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET (each ≥32 chars)
+# Edit .env: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET (each >=32 chars)
+# Optional: GOOGLE_MAPS_API_KEY for distance/impact calculations
 ```
 
 Create database and apply schema (one-time on a fresh database):
@@ -91,3 +92,5 @@ For managed cloud databases, append SSL params as required by the provider (ofte
 | GET | `/api/analytics/impact` | Admin/company; aggregate CO₂/fuel/distance stats |
 
 Matching assigns `pending` shipments to `available` vehicles with sufficient capacity; if the vehicle has prior deliveries, destination similarity is required (historical `shipments.destination`). New vehicles with no history can still match (cold start).
+
+
