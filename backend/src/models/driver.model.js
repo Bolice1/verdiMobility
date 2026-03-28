@@ -27,3 +27,14 @@ export async function findDriverById(id) {
   );
   return rows[0] ?? null;
 }
+
+export async function findDriverWithUserById(id) {
+  const { rows } = await pool.query(
+    `SELECT d.license_number AS "licenseNumber", u.name, u.email
+     FROM drivers d
+     INNER JOIN users u ON u.id = d.user_id
+     WHERE d.id = $1`,
+    [id],
+  );
+  return rows[0] ?? null;
+}

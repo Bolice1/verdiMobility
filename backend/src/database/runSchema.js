@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -51,9 +51,9 @@ async function ensureDefaultAdmin(client) {
     process.env.ADMIN_SEED_PASSWORD || 'ChangeMe!VerdiAdmin2025';
   const passwordHash = await bcrypt.hash(plain, BCRYPT_ROUNDS);
   await client.query(
-    `INSERT INTO users (name, email, password, role)
-     VALUES ($1, $2, $3, $4)`,
-    ['Platform Admin', DEFAULT_ADMIN_EMAIL, passwordHash, 'admin'],
+    `INSERT INTO users (name, email, password, role, email_verified)
+     VALUES ($1, $2, $3, 'admin'::user_role, TRUE)`,
+    ['Platform Admin', DEFAULT_ADMIN_EMAIL, passwordHash],
   );
   logger.info('Default admin user created', {
     email: DEFAULT_ADMIN_EMAIL,
@@ -110,6 +110,29 @@ async function run() {
       );
       process.exit(1);
     }
+
+    try {
+      const migDir = join(__dirname, '../../sql/migrations');
+      const files = (await readdir(migDir))
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+      for (const f of files) {
+        const msql = await readFile(join(migDir, f), 'utf8');
+        await client.query(msql);
+        logger.info(`Applied migration ${f}`);
+      }
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        logger.warn('sql/migrations directory not found');
+      } else {
+        logger.error('Migration failed', {
+          message: publicMessageForPgError(e),
+          code: e?.code,
+        });
+        process.exit(1);
+      }
+    }
+
     await ensureDefaultAdmin(client);
     try {
       const idxPath = join(__dirname, '../../sql/indexes_admin.sql');

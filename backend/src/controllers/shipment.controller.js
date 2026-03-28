@@ -2,7 +2,7 @@ import * as shipmentService from '../services/shipment.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const create = asyncHandler(async (req, res) => {
-  const created = await shipmentService.createShipment(req.user, req.body);
+  const created = await shipmentService.createShipment(req.user, req.body, req.id);
   res.status(201).json(created);
 });
 
@@ -21,6 +21,7 @@ export const patchStatus = asyncHandler(async (req, res) => {
     req.user,
     req.params.id,
     req.body.status,
+    req.id,
   );
   res.json(updated);
 });

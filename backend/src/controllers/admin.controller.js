@@ -62,3 +62,8 @@ export const stats = asyncHandler(async (req, res) => {
   const data = await adminService.getStats({ days });
   res.json({ success: true, data: { ...data, periodDays: days } });
 });
+
+export const patchUser = asyncHandler(async (req, res) => {
+  const user = await adminService.patchUserAccount(req.params.id, req.body);
+  res.json({ success: true, data: user });
+});

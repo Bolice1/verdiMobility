@@ -1,4 +1,7 @@
 import { pool } from '../database/pool.js';
+import * as userModel from '../models/user.model.js';
+import { NotFoundError } from '../utils/errors.js';
+import * as emailService from './email.service.js';
 
 function num(v) {
   if (v === null || v === undefined) return 0;
@@ -267,3 +270,52 @@ export async function getStats({ days }) {
     vehicle_utilization_rate: num(utilR.rows[0]?.rate),
   };
 }
+
+export async function patchUserAccount(userId, patch) {
+  const existing = await userModel.findUserById(userId);
+  if (!existing) {
+    throw new NotFoundError('User not found');
+  }
+  const prevSuspended = existing.suspended;
+  const prevRole = existing.role;
+
+  const client = await pool.connect();
+  let updated;
+  try {
+    updated = await userModel.updateUserRoleAndFlags(client, userId, {
+      role: patch.role,
+      suspended: patch.suspended,
+      suspendedReason: patch.suspendedReason,
+    });
+  } finally {
+    client.release();
+  }
+
+  if (!updated) {
+    throw new NotFoundError('User not found');
+  }
+
+  if (patch.suspended === true && !prevSuspended) {
+    emailService.queueAccountSuspendedEmail({
+      to: existing.email,
+      name: existing.name,
+      reason: patch.suspendedReason ?? 'Policy',
+    });
+  }
+  if (patch.suspended === false && prevSuspended) {
+    emailService.queueAccountReactivatedEmail({
+      to: existing.email,
+      name: existing.name,
+    });
+  }
+  if (patch.role !== undefined && patch.role !== prevRole) {
+    emailService.queueRoleChangedEmail({
+      to: existing.email,
+      name: existing.name,
+      newRole: patch.role,
+    });
+  }
+
+  return updated;
+}
+

@@ -7,6 +7,8 @@ import { env, assertRequiredEnv } from './src/config/index.js';
 import { closePool, verifyDatabaseConnection } from './src/config/database.js';
 import { logger } from './src/utils/logger.js';
 
+const PORT = Number.parseInt(process.env.PORT || '5987', 10) || 5987;
+
 function shutdown(signal) {
   return async () => {
     logger.info(`Received ${signal}, shutting down`);
@@ -32,8 +34,8 @@ async function main() {
   const app = createApp();
   const server = http.createServer(app);
 
-  server.listen(env.port, () => {
-    logger.info(`verdiMobility API listening on port ${env.port}`, {
+  server.listen(PORT, () => {
+    logger.info(`verdiMobility API listening on port ${PORT}`, {
       nodeEnv: env.nodeEnv,
     });
   });

@@ -1,9 +1,12 @@
 import { pool } from '../database/pool.js';
 import * as driverModel from '../models/driver.model.js';
 import * as shipmentModel from '../models/shipment.model.js';
+import * as userModel from '../models/user.model.js';
 import * as vehicleModel from '../models/vehicle.model.js';
 import { AppError } from '../utils/AppError.js';
 import { paginationMeta } from '../utils/pagination.js';
+import * as emailService from './email.service.js';
+import { queueShipmentStatusEmails } from './shipmentNotifications.js';
 
 const ALLOWED = {
   pending: new Set(['matched', 'cancelled']),
@@ -39,7 +42,7 @@ async function assertShipmentVisibility(actor, shipment) {
   throw new AppError('Forbidden', 403, 'FORBIDDEN');
 }
 
-export async function createShipment(actor, input) {
+export async function createShipment(actor, input, requestId) {
   if (actor.role !== 'user' && actor.role !== 'admin') {
     throw new AppError('Only senders can create shipments', 403, 'FORBIDDEN');
   }
@@ -53,6 +56,15 @@ export async function createShipment(actor, input) {
       weight: input.weight,
       price: input.price,
     });
+    const sender = await userModel.findUserEmailAndNameById(senderId);
+    if (sender?.email) {
+      emailService.queueShipmentCreatedEmail({
+        to: sender.email,
+        name: sender.name,
+        shipment: created,
+        requestId,
+      });
+    }
     return created;
   } finally {
     client.release();
@@ -82,7 +94,7 @@ export async function getShipmentById(actor, id) {
   return shipment;
 }
 
-export async function updateShipmentStatus(actor, id, nextStatus) {
+export async function updateShipmentStatus(actor, id, nextStatus, requestId) {
   const shipment = await shipmentModel.findShipmentById(id);
   if (!shipment) {
     throw new AppError('Shipment not found', 404, 'NOT_FOUND');
@@ -97,6 +109,7 @@ export async function updateShipmentStatus(actor, id, nextStatus) {
     );
   }
 
+  const previousStatus = shipment.status;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -111,6 +124,12 @@ export async function updateShipmentStatus(actor, id, nextStatus) {
       );
     }
     await client.query('COMMIT');
+    queueShipmentStatusEmails({
+      shipment: updated,
+      previousStatus,
+      nextStatus,
+      requestId,
+    });
     return updated;
   } catch (e) {
     await client.query('ROLLBACK');

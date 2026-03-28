@@ -24,6 +24,12 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   role user_role NOT NULL DEFAULT 'user',
   company_id UUID NULL,
+  email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  email_verification_token VARCHAR(255) NULL,
+  password_reset_token_hash VARCHAR(64) NULL,
+  password_reset_expires_at TIMESTAMPTZ NULL,
+  suspended BOOLEAN NOT NULL DEFAULT FALSE,
+  suspended_reason TEXT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT users_email_format CHECK (email ~* '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
 );
@@ -42,6 +48,12 @@ ALTER TABLE users
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_role ON users (role);
 CREATE INDEX idx_users_company_id ON users (company_id);
+
+CREATE INDEX idx_users_email_verification_token ON users (email_verification_token)
+  WHERE email_verification_token IS NOT NULL;
+
+CREATE INDEX idx_users_password_reset_hash ON users (password_reset_token_hash)
+  WHERE password_reset_token_hash IS NOT NULL;
 
 CREATE INDEX idx_companies_email ON companies (email);
 
