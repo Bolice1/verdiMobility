@@ -1,19 +1,31 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Truck, Users, Settings, LogOut, MapPin } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Truck, Users, Settings, LogOut, MapPin, Search } from 'lucide-react';
 
 const Sidebar = () => {
-  const navItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { path: '/fleet', name: 'Fleet Status', icon: Truck },
-    { path: '/drivers', name: 'Drivers', icon: Users },
-    { path: '/routes', name: 'Routes', icon: MapPin },
-    { path: '/settings', name: 'Settings', icon: Settings },
+  const navigate = useNavigate();
+  const userStr = localStorage.getItem('verdimo_user');
+  const user = userStr ? JSON.parse(userStr) : { role: 'admin' };
+
+  let navItems = [
+    { path: `/${user.role}/dashboard`, name: 'Overview', icon: LayoutDashboard },
+    { path: `/${user.role}/fleet`, name: 'Fleet Status', icon: Truck },
+    { path: `/${user.role}/drivers`, name: 'Drivers', icon: Users },
   ];
+
+  if (user.role === 'company') {
+    navItems.push({ path: '/company/find-drivers', name: 'Find Carriers', icon: Search });
+  }
+
+  navItems.push({ path: `/${user.role}/settings`, name: 'Settings', icon: Settings });
+
+  const handleLogout = () => {
+    localStorage.removeItem('verdimo_user');
+    navigate('/login');
+  };
 
   return (
     <aside className="sidebar">
       <div className="brand">
-        {/* Simple Icon representing the VerdiMo leaf/road logo concept */}
         <div className="brand-icon">
           <Truck size={32} strokeWidth={2.5} />
         </div>
@@ -34,7 +46,7 @@ const Sidebar = () => {
       </nav>
 
       <div className="nav-menu" style={{ marginTop: 'auto', flexGrow: 0 }}>
-        <button className="nav-item" style={{ background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', fontFamily: 'inherit', fontSize: '1rem' }}>
+        <button onClick={handleLogout} className="nav-item" style={{ background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', fontFamily: 'inherit', fontSize: '1rem' }}>
           <LogOut size={20} />
           <span>Log Out</span>
         </button>

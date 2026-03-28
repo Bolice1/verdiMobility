@@ -1,21 +1,61 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Login from './pages/auth/Login';
+import SignUp from './pages/auth/SignUp';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
 import Drivers from './pages/Drivers';
+import FindDrivers from './pages/company/FindDrivers';
+import DriverDashboard from './pages/driver/DriverDashboard';
+import CustomerDashboard from './pages/customer/CustomerDashboard';
 import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="fleet" element={<Fleet />} />
-          <Route path="drivers" element={<Drivers />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        {/* Root Redirect */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Super Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<Layout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="fleet" element={<Fleet />} />
+            <Route path="drivers" element={<Drivers />} />
+          </Route>
         </Route>
+
+        {/* Company Manager Routes */}
+        <Route path="/company" element={<ProtectedRoute allowedRoles={['company']} />}>
+          <Route element={<Layout />}>
+            <Route index element={<Navigate to="/company/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="fleet" element={<Fleet />} />
+            <Route path="find-drivers" element={<FindDrivers />} />
+            <Route path="drivers" element={<Drivers />} />
+          </Route>
+        </Route>
+
+        {/* Independent Driver Routes */}
+        <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']} />}>
+          <Route index element={<Navigate to="/driver/dashboard" replace />} />
+          <Route path="dashboard" element={<DriverDashboard />} />
+        </Route>
+
+        {/* Customer / Client Routes */}
+        <Route path="/customer" element={<ProtectedRoute allowedRoles={['customer']} />}>
+          <Route index element={<Navigate to="/customer/dashboard" replace />} />
+          <Route path="dashboard" element={<CustomerDashboard />} />
+        </Route>
+        
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
