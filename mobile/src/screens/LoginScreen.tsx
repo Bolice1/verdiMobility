@@ -18,6 +18,11 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<any>) {
       <Card title="verdiMobility" subtitle="Driver and shipper access">
         <Field label="Email" autoCapitalize="none" value={email} onChangeText={setEmail} />
         <Field label="Password" secureTextEntry value={password} onChangeText={setPassword} />
+        <View style={styles.forgotPasswordContainer}>
+          <Pressable onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.forgotPasswordLink}>Forgot password?</Text>
+          </Pressable>
+        </View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Pressable
           style={styles.primary}
@@ -53,6 +58,14 @@ const styles = StyleSheet.create({
   primaryLabel: {
     color: '#f0fdf4',
     fontWeight: '700',
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 12,
+  },
+  forgotPasswordLink: {
+    color: '#94a3b8',
+    fontSize: 14,
   },
   inline: {
     flexDirection: 'row',

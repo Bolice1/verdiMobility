@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../context/AuthProvider';
+import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { MarketplaceScreen } from '../screens/MarketplaceScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -56,6 +57,7 @@ export function RootNavigator() {
         <>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: false }} />
         </>
       ) : (
         <Stack.Screen name="Workspace" component={MainTabs} options={{ headerShown: false }} />

@@ -34,7 +34,12 @@ export function LoginPage() {
           }}
         >
           <Input label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-          <Input label="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <Input label="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.875rem', color: '#94a3b8', textDecoration: 'none' }}>Forgot password?</Link>
+            </div>
+          </div>
           {error && <p className="error-banner">{error}</p>}
           <Button type="submit" disabled={submitting}>
             {submitting ? 'Signing in...' : 'Sign in'}
