@@ -2,7 +2,9 @@ import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
 
+import { openApiSpec } from './docs/openapi.js';
 import { env } from './config/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
@@ -49,6 +51,19 @@ export function createApp() {
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'verdiMobility-api' });
   });
+
+  app.get('/openapi.json', (_req, res) => {
+    res.json(openApiSpec);
+  });
+
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openApiSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'verdiMobility API',
+    }),
+  );
 
   app.use('/api', api);
 

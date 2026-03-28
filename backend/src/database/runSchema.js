@@ -111,6 +111,21 @@ async function run() {
       process.exit(1);
     }
     await ensureDefaultAdmin(client);
+    try {
+      const idxPath = join(__dirname, '../../sql/indexes_admin.sql');
+      const idxSql = await readFile(idxPath, 'utf8');
+      await client.query(idxSql);
+      logger.info('Applied sql/indexes_admin.sql');
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        logger.warn('indexes_admin.sql not found');
+      } else {
+        logger.warn('Optional admin indexes apply failed', {
+          message: publicMessageForPgError(e),
+          code: e?.code,
+        });
+      }
+    }
     logger.info('Database schema task completed successfully');
   } catch (err) {
     logger.error('Database setup failed', {
