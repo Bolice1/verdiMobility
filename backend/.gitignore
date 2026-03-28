@@ -7,3 +7,6 @@ logs/
 *.md
 !README.md
 .env.example
+
+*.codex
+.codex
