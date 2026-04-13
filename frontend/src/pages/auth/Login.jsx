@@ -5,20 +5,20 @@ import { Truck, Mail, Lock } from 'lucide-react';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('admin'); // Mock selection
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     
-    let resolvedRole = role;
+    // Simulate backend recognizing the role via API based on email string
+    let resolvedRole = 'customer'; // Default fallback
+    const lowerEmail = email.toLowerCase();
     
-    // Hardcoded Super Admin Check
-    if (email === 'admin1@gmail.com' && password === '123456') {
-      resolvedRole = 'admin';
-    }
+    if (lowerEmail.includes('admin')) resolvedRole = 'admin';
+    else if (lowerEmail.includes('driver')) resolvedRole = 'driver';
+    else if (lowerEmail.includes('company')) resolvedRole = 'company';
 
-    localStorage.setItem('verdimo_user', JSON.stringify({ email, role: resolvedRole, name: 'Admin User' }));
+    localStorage.setItem('verdimo_user', JSON.stringify({ email, role: resolvedRole, name: 'Verified User' }));
     
     // Redirect based on role
     if (resolvedRole === 'driver') navigate('/driver/dashboard');
@@ -53,22 +53,11 @@ const Login = () => {
           <h2 style={{ textAlign: 'center', fontSize: '1.75rem', marginBottom: '0.5rem' }}>Welcome back</h2>
           <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '2rem' }}>Sign in to access your platform.</p>
           
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Mock Role Selector just for UI demo purposes */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>Login as (Demo)</label>
-              <select 
-                value={role} 
-                onChange={(e) => setRole(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-background)', fontFamily: 'inherit' }}
-              >
-                <option value="customer">Customer / Shipping Client</option>
-                <option value="driver">Independent Driver</option>
-                <option value="company">Company Manager</option>
-                <option value="admin">System Owner (Super Admin)</option>
-              </select>
-            </div>
+          <p style={{ textAlign: 'center', color: 'var(--color-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--color-border)' }}>
+            <strong>Demo Tip:</strong> Use an email containing <br/><code>driver</code>, <code>admin</code>, or <code>company</code> to login as those roles. All others default to <strong>Customer</strong>.
+          </p>
 
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.875rem' }}>Email Address</label>
               <div style={{ position: 'relative' }}>
