@@ -1,11 +1,12 @@
 import { pool } from '../database/pool.js';
 import * as shipmentModel from '../models/shipment.model.js';
 import * as vehicleModel from '../models/vehicle.model.js';
+import { env } from '../config/index.js';
 import { AppError } from '../utils/AppError.js';
 import { destinationsAreSimilar } from '../utils/destinationSimilarity.js';
 import { queueShipmentStatusEmails } from './shipmentNotifications.js';
 
-function scoreVehicleForShipment(vehicle, shipment, pastDestinations) {
+function scoreV1(vehicle, shipment, pastDestinations) {
   if (Number(vehicle.capacity) < Number(shipment.weight)) {
     return null;
   }
@@ -17,6 +18,29 @@ function scoreVehicleForShipment(vehicle, shipment, pastDestinations) {
     return null;
   }
   return { vehicle, score: 0.85, reason: 'history_destination_and_capacity' };
+}
+
+function scoreV2(vehicle, shipment, pastDestinations) {
+  if (Number(vehicle.capacity) < Number(shipment.weight)) {
+    return null;
+  }
+  const capacityScore = Math.min(Number(vehicle.capacity) / Number(shipment.weight), 1);
+  const destinationScore = pastDestinations.length
+    ? pastDestinations.some((d) => destinationsAreSimilar(d, shipment.destination)) ? 1 : 0
+    : 0.4; // cold start destination weight
+  const distanceScore = shipment.distanceKm
+    ? Math.max(0, 1 - Math.min(Number(shipment.distanceKm) / 500, 1)) // prefer shorter hauls; taper after 500km
+    : 0.5;
+
+  const score = 0.4 * capacityScore + 0.35 * destinationScore + 0.25 * distanceScore;
+  return { vehicle, score, reason: 'heuristic_v2' };
+}
+
+function scoreVehicleForShipment(vehicle, shipment, pastDestinations) {
+  if (env.matchingScorer === 'v2') {
+    return scoreV2(vehicle, shipment, pastDestinations);
+  }
+  return scoreV1(vehicle, shipment, pastDestinations);
 }
 
 export async function runMatching({ shipmentId, limit }, actor) {

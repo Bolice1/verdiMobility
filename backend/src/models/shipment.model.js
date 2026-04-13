@@ -2,16 +2,36 @@ import { pool } from '../database/pool.js';
 
 export async function insertShipment(
   client,
-  { senderId, pickupLocation, destination, weight, price },
+  {
+    senderId,
+    pickupLocation,
+    destination,
+    weight,
+    price,
+    distanceKm,
+    baselineDistanceKm,
+    fuelSavedLiters,
+    co2SavedKg,
+  },
 ) {
   const { rows } = await client.query(
-    `INSERT INTO shipments (sender_id, pickup_location, destination, weight, price)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO shipments (sender_id, pickup_location, destination, weight, price, distance_km, baseline_distance_km, fuel_saved_l, co2_saved_kg)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
                destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
                fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
                status, price, created_at AS "createdAt"`,
-    [senderId, pickupLocation, destination, weight, price],
+    [
+      senderId,
+      pickupLocation,
+      destination,
+      weight,
+      price,
+      distanceKm,
+      baselineDistanceKm,
+      fuelSavedLiters,
+      co2SavedKg,
+    ],
   );
   return rows[0];
 }
@@ -58,7 +78,9 @@ export async function listPendingShipments(client, { limit, shipmentId }) {
   if (shipmentId) {
     const { rows } = await client.query(
       `SELECT id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-              destination, weight, status, price, created_at AS "createdAt"
+              destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+              fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+              status, price, created_at AS "createdAt"
        FROM shipments
        WHERE id = $1 AND status = 'pending'
        LIMIT 1`,
@@ -68,7 +90,9 @@ export async function listPendingShipments(client, { limit, shipmentId }) {
   }
   const { rows } = await client.query(
     `SELECT id, sender_id AS "senderId", vehicle_id AS "vehicleId", pickup_location AS "pickupLocation",
-            destination, weight, status, price, created_at AS "createdAt"
+            destination, weight, distance_km AS "distanceKm", baseline_distance_km AS "baselineDistanceKm",
+            fuel_saved_l AS "fuelSavedLiters", co2_saved_kg AS "co2SavedKg",
+            status, price, created_at AS "createdAt"
      FROM shipments
      WHERE status = 'pending'
      ORDER BY created_at ASC
