@@ -1,0 +1,112 @@
+{
+  "GET /api/admin/overview": {
+    "success": true,
+    "data": {
+      "total_users": 120,
+      "total_companies": 15,
+      "total_vehicles": 48,
+      "total_shipments": 900,
+      "total_revenue": 125000.5,
+      "active_vehicles": 12,
+      "available_vehicles": 30
+    }
+  },
+  "GET /api/admin/companies?limit=20&offset=0": {
+    "success": true,
+    "data": {
+      "items": [
+        {
+          "id": "b0e0e0e0-e0e0-4000-a000-000000000001",
+          "name": "Acme Logistics",
+          "email": "fleet@acme.com",
+          "createdAt": "2026-01-10T12:00:00.000Z",
+          "vehicleCount": 8
+        }
+      ],
+      "meta": { "total": 15, "limit": 20, "offset": 0, "hasMore": false }
+    }
+  },
+  "GET /api/admin/vehicles?limit=20&offset=0": {
+    "success": true,
+    "data": {
+      "items": [
+        {
+          "id": "c0e0e0e0-e0e0-4000-a000-000000000002",
+          "companyId": "b0e0e0e0-e0e0-4000-a000-000000000001",
+          "plateNumber": "B-AB 1234",
+          "status": "busy",
+          "route": { "from": "Berlin Hub", "to": "Hamburg DC" },
+          "available_capacity": 2.5
+        }
+      ],
+      "meta": { "total": 48, "limit": 20, "offset": 0, "hasMore": true }
+    }
+  },
+  "GET /api/admin/shipments?limit=20&offset=0": {
+    "success": true,
+    "data": {
+      "items": [
+        {
+          "id": "d0e0e0e0-e0e0-4000-a000-000000000003",
+          "status": "in_transit",
+          "pickupLocation": "Warehouse A",
+          "destination": "Store B",
+          "weight": 1200,
+          "price": 450,
+          "createdAt": "2026-03-28T08:00:00.000Z",
+          "sender": {
+            "id": "e0e0e0e0-e0e0-4000-a000-000000000004",
+            "name": "Jane Sender",
+            "email": "jane@example.com"
+          },
+          "vehicle": {
+            "id": "c0e0e0e0-e0e0-4000-a000-000000000002",
+            "plateNumber": "B-AB 1234",
+            "companyId": "b0e0e0e0-e0e0-4000-a000-000000000001",
+            "status": "busy"
+          }
+        }
+      ],
+      "meta": { "total": 900, "limit": 20, "offset": 0, "hasMore": true }
+    }
+  },
+  "GET /api/admin/payments?limit=20&offset=0": {
+    "success": true,
+    "data": {
+      "items": [
+        {
+          "id": "f0e0e0e0-e0e0-4000-a000-000000000005",
+          "shipmentId": "d0e0e0e0-e0e0-4000-a000-000000000003",
+          "amount": 450,
+          "status": "completed"
+        }
+      ],
+      "summary": {
+        "totalRecords": 850,
+        "totalAmountAll": 380000,
+        "byStatus": {
+          "pending": { "count": 20, "totalAmount": 9000 },
+          "completed": { "count": 800, "totalAmount": 360000 },
+          "failed": { "count": 30, "totalAmount": 11000 }
+        }
+      },
+      "meta": { "total": 850, "limit": 20, "offset": 0, "hasMore": true }
+    }
+  },
+  "GET /api/admin/stats?days=30": {
+    "success": true,
+    "data": {
+      "shipments_per_day": [{ "date": "2026-03-01", "count": 14 }],
+      "revenue_per_day": [{ "date": "2026-03-01", "revenue": 5200 }],
+      "most_active_routes": [
+        {
+          "route_from": "Berlin",
+          "route_to": "Munich",
+          "shipment_count": 42
+        }
+      ],
+      "vehicle_utilization_rate": 38.25,
+      "periodDays": 30
+    }
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+.env
+logs/
+*.log
+.DS_Store
+
+*.md
+!README.md
+!.env.example
+
+*.codex
+.codex

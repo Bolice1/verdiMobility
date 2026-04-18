@@ -1,1 +1,10 @@
 node_modules
+<<<<<<< HEAD
+=======
+.codex  
+dist
+coverage
+*.log 
+.github
+      
+>>>>>>> 5bd55daff01594211f2e6e164dca39af03948bf2

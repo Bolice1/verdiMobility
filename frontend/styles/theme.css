@@ -1,0 +1,13 @@
+:root {
+  --background: #f6f8f6;
+  --foreground: #0b0f0c;
+  --muted: #4b5a4d;
+  --panel: #ffffff;
+}
+
+.dark {
+  --background: #08110a;
+  --foreground: #f4f7f4;
+  --muted: #9eb3a1;
+  --panel: #0e1710;
+}
