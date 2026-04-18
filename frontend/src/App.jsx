@@ -46,10 +46,11 @@ function App() {
             <Route path="fleet" element={<Fleet />} />
             <Route path="find-drivers" element={<FindDrivers />} />
             <Route path="drivers" element={<Drivers />} />
+            
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
-        
+
 
         {/* Independent Driver Routes */}
         <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']} />}>
