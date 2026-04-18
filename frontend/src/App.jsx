@@ -50,6 +50,7 @@ function App() {
           </Route>
         </Route>
 
+
         {/* Independent Driver Routes */}
         <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']} />}>
           <Route index element={<Navigate to="/driver/dashboard" replace />} />
