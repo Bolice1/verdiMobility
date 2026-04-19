@@ -40,6 +40,7 @@ function App() {
         {/* Company Manager Routes */}
         <Route path="/company" element={<ProtectedRoute allowedRoles={['company']} />}>
           <Route element={<Layout />}>
+          
             <Route index element={<Navigate to="/company/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="fleet" element={<Fleet />} />
