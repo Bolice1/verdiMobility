@@ -57,7 +57,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        {/* Customer / Client Routes */}
+        {/* Customer / Client Routes  */}
         <Route path="/customer" element={<ProtectedRoute allowedRoles={['customer']} />}>
           <Route index element={<Navigate to="/customer/dashboard" replace />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
