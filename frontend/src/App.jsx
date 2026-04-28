@@ -46,7 +46,7 @@ function App() {
             <Route path="fleet" element={<Fleet />} />
             <Route path="find-drivers" element={<FindDrivers />} />
             <Route path="drivers" element={<Drivers />} />
-            
+
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
@@ -60,7 +60,7 @@ function App() {
         </Route>
 
         {/* Customer / Client Routes  */}
-        <Route path="/customer" element={<ProtectedRoute allowedRoles={['customer']} />}>
+        <Route path="/customer" element={<Protecte dRoute allowedRoles={['customer']} />}>
           <Route index element={<Navigate to="/customer/dashboard" replace />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
           <Route path="settings" element={<Settings />} />
